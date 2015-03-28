@@ -6,7 +6,7 @@
 // @updateURL	  https://github.com/Schuwi/Return-of-the-Josh/raw/master/Return_of_the_Josh.user.js
 // @downloadURL	https://github.com/Schuwi/Return-of-the-Josh/raw/master/Return_of_the_Josh.user.js
 // @include     http://forums.ltheory.com*
-// @version     1.0
+// @version     1.1
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
