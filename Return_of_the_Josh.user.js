@@ -79,9 +79,7 @@ var handler_forum = function handler_forum(response) {
   if (!(response.readyState == 4 && response.status == 200)) return; // Check if the request has finished and we got a 200 response
   
   // Convert the string we got to a DOM document
-  var doctype = document.implementation.createDocumentType( 'html', '', '');
-  var doc = document.implementation.createDocument('', 'html', doctype).documentElement;
-  doc.innerHTML = response.responseText;
+  var doc = new DOMParser().parseFromString(response.responseText, "text/html");
 
   var timeElement = getElementsByClass('post', doc, 'div')[0].getElementsByTagName('dd')[0]; // Read out the time of the newest post from the website
   if (Date.parse(timeElement.innerHTML) > new Date() - 14*24*60*60*1000) new_forum_post = true; // Compare to the 'newest' post
@@ -93,9 +91,7 @@ var handler_forum = function handler_forum(response) {
 var handler_kickstarter = function handler_kickstarter(response) {
   if (!(response.readyState == 4 && response.status == 200)) return;
 
-  var doctype = document.implementation.createDocumentType( 'html', '', '');
-  var doc = document.implementation.createDocument('', 'html', doctype).documentElement;
-  doc.innerHTML = response.responseText;
+  var doc = new DOMParser().parseFromString(response.responseText, "text/html");
 
   var timeElement = getElementsByClass('post', doc, 'div')[0].getElementsByTagName('time')[0];
   if (Date.parse(timeElement.getAttribute('datetime')) > new Date() - 14*24*60*60*1000) new_kickstarter_post = true;
