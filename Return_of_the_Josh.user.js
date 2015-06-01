@@ -6,7 +6,7 @@
 // @updateURL	  https://github.com/Schuwi/Return-of-the-Josh/raw/master/Return_of_the_Josh.user.js
 // @downloadURL	https://github.com/Schuwi/Return-of-the-Josh/raw/master/Return_of_the_Josh.user.js
 // @include     http://forums.ltheory.com*
-// @version     1.2
+// @version     1.3
 // @grant       GM_xmlhttpRequest
 // @grant       GM_setValue
 // @grant       GM_getValue
@@ -141,7 +141,7 @@ var handler_twitter = function handler_twitter(response, josh) {
 
   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
 
-  var timeElement = getElementsByClass('js-short-timestamp ', getElementsByClass('ProfileTweet', doc, 'div')[0], 'span')[0];
+  var timeElement = getElementsByClass('js-short-timestamp ', getElementsByClass('tweet', doc, 'div')[0], 'span')[0];
   if (new Date(parseInt(timeElement.getAttribute('data-time'))*1000) > new Date() - 14*24*60*60*1000) { // Multiply the value of the timeElement date attribute by 1000 because its given in seconds
     if (josh) post_refs[posts] = twitter_josh_ref; else post_refs[posts] = twitter_lt_ref;
     posts++;
