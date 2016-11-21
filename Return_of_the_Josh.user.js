@@ -12,6 +12,9 @@
 // @grant       GM_getValue
 // ==/UserScript==
 
+var validAge = 14 * 24 * 60 * 60 * 1000; // Maximum age of a post to be considered 'new' in milliseconds
+var refreshDelay = 30 * 60 * 1000; // Minimum delay between querying for new posts in milliseconds
+
 var kickstarter_link = 'https://www.kickstarter.com/projects/joshparnell/limit-theory-an-infinite-procedural-space-game/posts';
 var forum_link = 'http://forums.ltheory.com/search.php?keywords=&terms=all&author=JoshParnell&sc=1&sf=all&sr=posts&sk=t&sd=d&st=0&ch=300&t=0&submit=Search';
 var twitter_josh_link = 'https://twitter.com/proceduralguy';
@@ -29,7 +32,7 @@ var three_posts_pattern = 'New posts on {0}, {1} and {2}';
 var four_posts_pattern = 'New posts on {0}, {1}, {2} and {3}';
 
 var posts = 0;
-var post_refs = new Array();
+var post_refs = [];
 
 var loaded = 0;
 
@@ -38,7 +41,8 @@ var wrapperElement = document.createElement('div');
 var reference = document.getElementsByName("start_here")[0];
 reference.parentNode.insertBefore(wrapperElement, reference.nextSibling);
 
-if (new Date(GM_getValue('lastUpdate', '0')) > new Date() - 30*60*1000 && GM_getValue('cachedBanner', false)) {
+// Check for cached version
+if (new Date(GM_getValue('lastUpdate', '0')) > new Date() - refreshDelay && GM_getValue('cachedBanner', false)) {
   wrapperElement.innerHTML = GM_getValue('cachedBanner');
   return;
 }
@@ -49,6 +53,9 @@ injectStringFormat();
 // Calling function to load posts from Kickstarter and the Forum
 invokeInfoLoading();
 
+// ========================
+// ======== BANNER ========
+// ========================
 // Adding the banner to the document
 var bannerElement = document.createElement('div');
 var inner_html = document.createElement('span');
@@ -104,7 +111,11 @@ function updateBanner() {
     GM_setValue('lastUpdate', new Date().toString());
   }
 }
+// -------- BANNER --------
 
+// ============================
+// ======== DOM PARSER ========
+// ============================
 var handler_forum = function handler_forum(response) {
   if (!(response.readyState == 4 && response.status == 200)) return; // Check if the request has finished and we got a 200 response
   
@@ -112,7 +123,7 @@ var handler_forum = function handler_forum(response) {
   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
 
   var timeElement = getElementsByClass('post', doc, 'div')[0].getElementsByTagName('dd')[0]; // Read out the time of the newest post from the website
-  if (Date.parse(timeElement.innerHTML) > new Date() - 14*24*60*60*1000) { // Compare to the 'newest' post
+  if (Date.parse(timeElement.innerHTML) > new Date() - validAge) { // Compare to the 'newest' post
     post_refs[posts] = forum_ref;
     posts++;
   }
@@ -127,7 +138,7 @@ var handler_kickstarter = function handler_kickstarter(response) {
   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
 
   var timeElement = getElementsByClass('post', doc, 'div')[0].getElementsByTagName('time')[0];
-  if (Date.parse(timeElement.getAttribute('datetime')) > new Date() - 14*24*60*60*1000) {
+  if (Date.parse(timeElement.getAttribute('datetime')) > new Date() - validAge) {
     kickstarter_post = true;
     post_refs[posts] = kickstarter_ref;
     posts++;
@@ -142,14 +153,18 @@ var handler_twitter = function handler_twitter(response, josh) {
   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
 
   var timeElement = getElementsByClass('js-short-timestamp ', getElementsByClass('tweet', doc, 'div')[0], 'span')[0];
-  if (new Date(parseInt(timeElement.getAttribute('data-time'))*1000) > new Date() - 14*24*60*60*1000) { // Multiply the value of the timeElement date attribute by 1000 because its given in seconds
+  if (new Date(parseInt(timeElement.getAttribute('data-time'))*1000) > new Date() - validAge) { // Multiply the value of the timeElement date attribute by 1000 because its given in seconds
     if (josh) post_refs[posts] = twitter_josh_ref; else post_refs[posts] = twitter_lt_ref;
     posts++;
   }
   loaded++;
   if (loaded == 4) updateBanner();
 }
+// -------- DOM PARSER --------
 
+// ===============================
+// ======== PAGE LOADINGS ========
+// ===============================
 function invokeInfoLoading() {
   // Load the forum page
   setTimeout(function() {
@@ -191,7 +206,11 @@ function invokeInfoLoading() {
     });
   }, 0);
 }
+// -------- PAGE LOADINGS --------
 
+// ================================
+// ======== 3RD PARTY CODE ========
+// ================================
 // Source: http://anyexample.com/webdev/javascript/javascript_getelementsbyclass_function.xml
 function getElementsByClass( searchClass, domNode, tagName) {
   if (domNode == null) domNode = document;
@@ -228,3 +247,4 @@ function injectStringFormat() {
   };
   String.prototype.format.regex = new RegExp("{-?[0-9]+}", "g");
 }
+// -------- 3RD PARTY CODE --------
